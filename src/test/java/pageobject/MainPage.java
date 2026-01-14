@@ -1,14 +1,13 @@
 package pageobject;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import java.util.List;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.NoSuchElementException;
 
 public class MainPage {
 
@@ -20,21 +19,17 @@ public class MainPage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-    // ===== Элементы главной страницы =====
+    // ===== КНОПКИ «ЗАКАЗАТЬ» =====
 
     // Верхняя кнопка «Заказать»
-    private By orderButtonTop = By.xpath("(//button[contains(@class,'Button_Button__ra12g')])[1]");
+    private By orderButtonTop =
+            By.xpath("(//button[contains(@class,'Button_Button__ra12g')])[1]");
 
     // Нижняя кнопка «Заказать»
-    private By orderButtonBottom = By.xpath("(//button[contains(@class,'Button_Button__ra12g')])[3]");
+    private By orderButtonBottom =
+            By.xpath("//div[@class='Home_FinishButton__1_cWm']//button");
 
-    // Вопросы в FAQ
-    private By faqQuestions = By.className("accordion__button");
-
-    // Ответы в FAQ
-    private By faqAnswers = By.className("accordion__panel");
-
-    // ===== Методы =====
+    // ===== МЕТОДЫ =====
 
     // Клик по верхней кнопке «Заказать»
     public void clickOrderButtonTop() {
@@ -43,29 +38,39 @@ public class MainPage {
 
     // Клик по нижней кнопке «Заказать»
     public void clickOrderButtonBottom() {
-        List<WebElement> buttons = driver.findElements(orderButtonBottom);
-        WebElement bottomButton = buttons.get(1);
+        WebElement button = wait.until(
+                ExpectedConditions.elementToBeClickable(orderButtonBottom)
+        );
 
         ((JavascriptExecutor) driver)
-                .executeScript("arguments[0].scrollIntoView(true);", bottomButton);
+                .executeScript("arguments[0].scrollIntoView(true);", button);
 
-        wait.until(ExpectedConditions.elementToBeClickable(bottomButton)).click();
+        button.click();
     }
 
-    // Клик по вопросу FAQ по индексу
-    public void clickFaqQuestion(int index) {
-        List<WebElement> questions = driver.findElements(faqQuestions);
-        WebElement question = questions.get(index);
+    // Клик по FAQ-вопросу по тексту
+    public void clickFaqQuestionByText(String questionText) {
+        WebElement question = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.xpath("//div[@class='accordion__button' and contains(text(),'" + questionText + "')]")
+                )
+        );
 
         ((JavascriptExecutor) driver)
                 .executeScript("arguments[0].scrollIntoView(true);", question);
 
+        //question.click();
         wait.until(ExpectedConditions.elementToBeClickable(question)).click();
     }
 
-    // Получение текста ответа FAQ по индексу
-    public String getFaqAnswerText(int index) {
-        List<WebElement> answers = driver.findElements(faqAnswers);
-        return answers.get(index).getText();
+
+
+    // Получение текста ВИДИМОГО ответа FAQ
+    public String getVisibleFaqAnswerText() {
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        By.xpath("//div[contains(@class,'accordion__panel') and not(@hidden)]")
+                )
+        ).getText();
     }
 }

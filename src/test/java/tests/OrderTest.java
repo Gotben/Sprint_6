@@ -11,8 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OrderTest extends BaseTest {
 
-    private OrderPage orderPage;
-
     static Stream<Arguments> orderData() {
         return Stream.of(
                 Arguments.of("Иван", "Иванов", "ул. Ленина, 1",
@@ -27,16 +25,45 @@ public class OrderTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("orderData")
-    void positiveOrderFlow(String firstName, String lastName,
-                           String address, String metro,
-                           String phone, String date,
-                           String rentDays, String color,
-                           String comment) {
+    void orderFromTopButton(String firstName, String lastName,
+                            String address, String metro,
+                            String phone, String date,
+                            String rentDays, String color,
+                            String comment) {
 
-        orderPage = new OrderPage(driver);
+        OrderPage orderPage = new OrderPage(driver);
 
-        // Точка входа — верхняя кнопка «Заказать»
+        // Клик по верхней кнопке «Заказать»
         mainPage.clickOrderButtonTop();
+
+        completeOrder(orderPage, firstName, lastName, address,
+                metro, phone, date, rentDays, color, comment);
+    }
+
+    @ParameterizedTest
+    @MethodSource("orderData")
+    void orderFromBottomButton(String firstName, String lastName,
+                               String address, String metro,
+                               String phone, String date,
+                               String rentDays, String color,
+                               String comment) {
+
+        OrderPage orderPage = new OrderPage(driver);
+
+        // Клик по нижней кнопке «Заказать»
+        mainPage.clickOrderButtonBottom();
+
+        completeOrder(orderPage, firstName, lastName, address,
+                metro, phone, date, rentDays, color, comment);
+    }
+
+    // Общий метод оформления заказа (без дублирования кода)
+    private void completeOrder(OrderPage orderPage,
+                               String firstName, String lastName,
+                               String address, String metro,
+                               String phone, String date,
+                               String rentDays, String color,
+                               String comment) {
 
         orderPage.fillPersonalInfo(firstName, lastName, address, metro, phone);
         orderPage.fillRentInfo(date, rentDays, color, comment);
